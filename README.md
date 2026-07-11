@@ -9,7 +9,25 @@ Built for recording tutorial videos, live coding demos, and "code-along" screenc
 ## Install
 
 ```bash
-pip install livetype
+# From GitHub
+pip install git+https://github.com/JingW-ui/livetype.git
+
+# Or from Gitee (China mirror)
+pip install git+https://gitee.com/wj4/livetype.git
+```
+
+Pin a specific version with a tag:
+
+```bash
+pip install git+https://github.com/JingW-ui/livetype.git@v0.1.0
+```
+
+For local development:
+
+```bash
+git clone https://github.com/JingW-ui/livetype.git
+cd livetype
+pip install -e .
 ```
 
 ## Quick start
