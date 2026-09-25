@@ -19,8 +19,12 @@ from .base import LanguageStrategy
 class _CLikeStrategyBase(LanguageStrategy):
     _human = False
 
+    def __init__(self):
+        self._close_stack = []   # () [] 的自动闭合栈（与 Python 策略一致）
+
     def type_code(self, lines, engine):
         self._human = engine.config.typing_mode != "fast"
+        self._close_stack = []   # () [] 的自动闭合栈（与 Python 策略一致）
         lines = [l.rstrip('\r\n') for l in lines if l.strip() != '']
         prev_indent = 0
         for i, line in enumerate(lines):
@@ -87,6 +91,15 @@ class _CLikeStrategyBase(LanguageStrategy):
                     state = 'IN_STRING'
                     i += 1
                     continue
+                elif char in '([':
+                    self._type_char(char, engine)
+                    self._close_stack.append(')' if char == '(' else ']')
+                elif char in ')]':
+                    if self._close_stack and self._close_stack[-1] == char:
+                        self._close_stack.pop()
+                        engine.press('right')
+                    else:
+                        self._type_char(char, engine)
                 elif char == '{':
                     self._type_char('{', engine)
                     brace_depth = 1
@@ -109,24 +122,32 @@ class _CLikeStrategyBase(LanguageStrategy):
                 else:
                     self._type_char(char, engine)
             elif state == 'IN_CHAR':
-                self._type_char(char, engine)
                 if char == '\\':
+                    self._type_char(char, engine)
                     state = 'IN_CHAR_ESCAPE'
                 elif char == "'":
+                    engine.press('right')
                     state = 'NORMAL'
                 elif char in '({[':
+                    self._type_char(char, engine)
                     engine.delete_auto_close()
+                else:
+                    self._type_char(char, engine)
             elif state == 'IN_CHAR_ESCAPE':
                 self._type_char(char, engine)
                 state = 'IN_CHAR'
             elif state == 'IN_STRING':
-                self._type_char(char, engine)
                 if char == '\\':
+                    self._type_char(char, engine)
                     state = 'IN_STRING_ESCAPE'
                 elif char == '"':
+                    engine.press('right')
                     state = 'NORMAL'
                 elif char in '({[':
+                    self._type_char(char, engine)
                     engine.delete_auto_close()
+                else:
+                    self._type_char(char, engine)
             elif state == 'IN_STRING_ESCAPE':
                 self._type_char(char, engine)
                 state = 'IN_STRING'
@@ -172,6 +193,15 @@ class GoStrategy(_CLikeStrategyBase):
                     state = 'IN_RAW_STRING'
                     i += 1
                     continue
+                elif char in '([':
+                    self._type_char(char, engine)
+                    self._close_stack.append(')' if char == '(' else ']')
+                elif char in ')]':
+                    if self._close_stack and self._close_stack[-1] == char:
+                        self._close_stack.pop()
+                        engine.press('right')
+                    else:
+                        self._type_char(char, engine)
                 elif char == '{':
                     self._type_char('{', engine)
                     brace_depth = 1
@@ -194,24 +224,32 @@ class GoStrategy(_CLikeStrategyBase):
                 else:
                     self._type_char(char, engine)
             elif state == 'IN_CHAR':
-                self._type_char(char, engine)
                 if char == '\\':
+                    self._type_char(char, engine)
                     state = 'IN_CHAR_ESCAPE'
                 elif char == "'":
+                    engine.press('right')
                     state = 'NORMAL'
                 elif char in '({[':
+                    self._type_char(char, engine)
                     engine.delete_auto_close()
+                else:
+                    self._type_char(char, engine)
             elif state == 'IN_CHAR_ESCAPE':
                 self._type_char(char, engine)
                 state = 'IN_CHAR'
             elif state == 'IN_STRING':
-                self._type_char(char, engine)
                 if char == '\\':
+                    self._type_char(char, engine)
                     state = 'IN_STRING_ESCAPE'
                 elif char == '"':
+                    engine.press('right')
                     state = 'NORMAL'
                 elif char in '({[':
+                    self._type_char(char, engine)
                     engine.delete_auto_close()
+                else:
+                    self._type_char(char, engine)
             elif state == 'IN_STRING_ESCAPE':
                 self._type_char(char, engine)
                 state = 'IN_STRING'
